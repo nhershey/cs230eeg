@@ -13,9 +13,13 @@ import random
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
+import pickle 	#used to store data
+
 # below path goes to full data set on raiders6
-#PATH_TO_DATA = "../../../../../jdunnmon/EEG/eegdbs/SEC/stanford/"
-PATH_TO_DATA = "data/dummy_data/"
+# PATH_TO_DATA = "../../../../../jdunnmon/EEG/eegdbs/SEC/stanford/"
+PATH_TO_DATA = "../../../jdunnmon/EEG/pilot_eeg_dataset/data/stanford/"
+# PATH_TO_DATA = "../../../jdunnmon/EEG/eegdbs/SEC/stanford/"
+# PATH_TO_DATA = "data/dummy_data/"
 SEIZURE_STRINGS = ['sz','seizure','absence','spasm']
 FREQUENCY = 200
 EPOCH_LENGTH_SEC = 10
@@ -44,9 +48,9 @@ def sliceEpoch(orderedChannels, signals, sliceTime):
 	startTime = int(FREQUENCY * sliceTime)
 	endTime = int(FREQUENCY * (sliceTime + EPOCH_LENGTH_SEC))
 	sliceMatrix = signals[orderedChannels,  startTime : endTime]
-	# return sliceMatrix
-	sliceVector = np.ndarray.flatten(sliceMatrix)
-	return sliceVector
+	return sliceMatrix.T
+	# sliceVector = np.ndarray.flatten(sliceMatrix)
+	# return sliceVector
 
 # gets a random slice from a record
 def getRandomSlice(record):
@@ -57,34 +61,49 @@ def getRandomSlice(record):
 	return sliceEpoch(orderedChannels, record['signals'], random.randint(0,maxStart))
 
 # gets all the files
-def getDataLoaders():
+def getDataLoaders(loadSaved = True):
+	if (True):
+		with open('raw_data.pickle', 'rb') as handle:
+			b = pickle.load(handle)
+			return b
 	fileNames =  os.listdir(PATH_TO_DATA)
 	filesWithoutSeizures = []
 	seizures = []
 	nonSeizures = []
 	for i in range(len(fileNames)):
-		currentFileName = PATH_TO_DATA + fileNames[i]
-		hdf = h5py.File(currentFileName)
-		annot = hdf['record-0']['edf_annotations']
-		antext = [s.decode('utf-8') for s in annot['texts'][:]]
-		starts100ns = [xx for xx in annot['starts_100ns'][:]]
-		df = pd.DataFrame(data=antext, columns=['text'])
-		df['starts100ns'] = starts100ns
-		df['starts_sec'] = df['starts100ns']/10**7
-		seizureDF = df[df.text.str.contains('|'.join(SEIZURE_STRINGS),case=False)]
-		if not seizureDF.empty: # i.e., it contains a seizure annotation
-			seizureTimes = seizureDF['starts_sec'].tolist()
-			orderedChannels = getOrderedChannels(hdf['record-0']['signal_labels'])
-			for time in seizureTimes:
-				seizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], time)
-				if seizure is not None:
-					seizures.append((torch.FloatTensor(seizure),1))
-		else: # if no seizure, we randomly pull 10 seconds and call it non-seizure
-			filesWithoutSeizures.append(fileNames[i])
-			orderedChannels = getOrderedChannels(hdf['record-0']['signal_labels'])
-			maxStart = float(hdf['record-0']['signals'].shape[1] - FREQUENCY * EPOCH_LENGTH_SEC)
-			nonSeizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], random.randint(0,1000.0))
-			nonSeizures.append((torch.FloatTensor(nonSeizure),0))
-		hdf.close()
+		try:
+			currentFileName = PATH_TO_DATA + fileNames[i]
+			hdf = h5py.File(currentFileName)
+			annot = hdf['record-0']['edf_annotations']
+			antext = [s.decode('utf-8') for s in annot['texts'][:]]
+			starts100ns = [xx for xx in annot['starts_100ns'][:]]
+			df = pd.DataFrame(data=antext, columns=['text'])
+			df['starts100ns'] = starts100ns
+			df['starts_sec'] = df['starts100ns']/10**7
+			seizureDF = df[df.text.str.contains('|'.join(SEIZURE_STRINGS),case=False)]
+			if not seizureDF.empty: # i.e., it contains a seizure annotation
+				seizureTimes = seizureDF['starts_sec'].tolist()
+				orderedChannels = getOrderedChannels(hdf['record-0']['signal_labels'])
+				for time in seizureTimes:
+					seizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], time)
+					if seizure is not None:
+						seizures.append((torch.FloatTensor(seizure),1))				
+			else: # if no seizure, we randomly pull 10 seconds and call it non-seizure
+				filesWithoutSeizures.append(fileNames[i])
+				orderedChannels = getOrderedChannels(hdf['record-0']['signal_labels'])
+				maxStart = float(hdf['record-0']['signals'].shape[1] - FREQUENCY * EPOCH_LENGTH_SEC)
+				nonSeizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], random.randint(0,1000.0))
+				nonSeizures.append((torch.FloatTensor(nonSeizure),0))
+			hdf.close()
+		except:
+			print(i)
 	allData = seizures + nonSeizures
+	with open('raw_data.pickle', 'wb') as handle:
+		pickle.dump(allData, handle, protocol=pickle.HIGHEST_PROTOCOL)
 	return allData
+
+def main():
+	getDataLoaders(loadSaved = False)
+
+if __name__ == "__main__":
+    main()

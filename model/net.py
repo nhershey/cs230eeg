@@ -56,6 +56,13 @@ class Net(nn.Module):
         self.fc_1 = nn.Linear(50000,100)
         self.fc_2 = nn.Linear(100,2)
 
+        # the LSTM takes as input the size of its input (embedding_dim), its hidden size
+        # for more details on how to use it, check out the documentation
+        self.lstm = nn.LSTM(25, 20, batch_first=True)
+
+        # the fully connected layer transforms the output to give the final output layer
+        self.fc = nn.Linear(20, 5)
+
     def forward(self, s):
         """
         This function defines how we use the components of our network to operate on an input batch.
@@ -89,8 +96,11 @@ class Net(nn.Module):
         # since it is numerically more stable)
         # return F.log_softmax(s, dim=1)
 
-        s = F.relu(self.fc_1(s))   # batch_size x self.num_channels*4
-        s = self.fc_2(s)
+        # s = F.relu(self.fc_1(s))   # batch_size x self.num_channels*4
+        # s = self.fc_2(s)
+        # return F.log_softmax(s, dim=1)
+        s, _ = self.lstm(s) # because lstm returns all hidden states and final hidden state
+        s = self.fc(s)
         return F.log_softmax(s, dim=1)
 
 

@@ -91,3 +91,165 @@
 2018-02-22 21:28:08,256:INFO: Epoch 3/10
 2018-02-22 21:28:08,475:INFO: - Train metrics: accuracy: 1.000 ; loss: 0.000
 2018-02-22 21:28:08,525:INFO: - Eval metrics : accuracy: 0.429 ; loss: 3578.439
+2018-03-10 21:33:47,552:INFO: Loading the datasets...
+2018-03-10 21:34:42,126:INFO: Loading the datasets...
+2018-03-10 21:34:42,680:INFO: - done.
+2018-03-10 21:34:42,749:INFO: Starting training for 10 epoch(s)
+2018-03-10 21:34:42,749:INFO: Epoch 1/10
+2018-03-10 21:34:43,128:INFO: - Train metrics: loss: 59.121 ; accuracy: 0.429
+2018-03-10 21:34:43,203:INFO: - Eval metrics : loss: 1119.534 ; accuracy: 0.571
+2018-03-10 21:34:43,998:INFO: - Found new best accuracy
+2018-03-10 21:34:44,315:INFO: Epoch 2/10
+2018-03-10 21:34:44,541:INFO: - Train metrics: loss: 147.462 ; accuracy: 0.857
+2018-03-10 21:34:44,625:INFO: - Eval metrics : loss: 1701.234 ; accuracy: 0.571
+2018-03-10 21:34:45,328:INFO: - Found new best accuracy
+2018-03-10 21:34:45,567:INFO: Epoch 3/10
+2018-03-10 21:34:45,783:INFO: - Train metrics: loss: 0.000 ; accuracy: 1.000
+2018-03-10 21:34:45,856:INFO: - Eval metrics : loss: 2188.897 ; accuracy: 0.571
+2018-03-10 21:34:46,573:INFO: - Found new best accuracy
+2018-03-10 21:34:46,766:INFO: Epoch 4/10
+2018-03-10 21:34:46,995:INFO: - Train metrics: loss: 0.000 ; accuracy: 1.000
+2018-03-10 21:34:47,072:INFO: - Eval metrics : loss: 2588.990 ; accuracy: 0.571
+2018-03-10 21:34:47,807:INFO: - Found new best accuracy
+2018-03-10 21:34:48,028:INFO: Epoch 5/10
+2018-03-10 21:34:48,225:INFO: - Train metrics: loss: 0.000 ; accuracy: 1.000
+2018-03-10 21:34:48,312:INFO: - Eval metrics : loss: 2927.467 ; accuracy: 0.571
+2018-03-10 21:34:49,037:INFO: - Found new best accuracy
+2018-03-10 21:34:49,238:INFO: Epoch 6/10
+2018-03-10 21:34:49,462:INFO: - Train metrics: loss: 0.000 ; accuracy: 1.000
+2018-03-10 21:34:49,562:INFO: - Eval metrics : loss: 3216.391 ; accuracy: 0.571
+2018-03-10 21:34:50,639:INFO: - Found new best accuracy
+2018-03-10 21:34:50,946:INFO: Epoch 7/10
+2018-03-10 21:34:51,148:INFO: - Train metrics: loss: 0.000 ; accuracy: 1.000
+2018-03-10 21:34:51,231:INFO: - Eval metrics : loss: 3466.440 ; accuracy: 0.571
+2018-03-10 21:34:52,113:INFO: - Found new best accuracy
+2018-03-10 21:34:52,370:INFO: Epoch 8/10
+2018-03-10 21:34:52,585:INFO: - Train metrics: loss: 0.000 ; accuracy: 1.000
+2018-03-10 21:34:52,667:INFO: - Eval metrics : loss: 3685.120 ; accuracy: 0.571
+2018-03-10 21:34:53,523:INFO: - Found new best accuracy
+2018-03-10 21:34:53,744:INFO: Epoch 9/10
+2018-03-10 21:34:54,034:INFO: - Train metrics: loss: 0.000 ; accuracy: 1.000
+2018-03-10 21:34:54,108:INFO: - Eval metrics : loss: 3877.873 ; accuracy: 0.571
+2018-03-10 21:34:54,888:INFO: - Found new best accuracy
+2018-03-10 21:34:55,088:INFO: Epoch 10/10
+2018-03-10 21:34:55,296:INFO: - Train metrics: loss: 0.000 ; accuracy: 1.000
+2018-03-10 21:34:55,373:INFO: - Eval metrics : loss: 4048.805 ; accuracy: 0.571
+2018-03-10 21:34:56,188:INFO: - Found new best accuracy
+2018-03-10 21:37:49,258:INFO: Loading the datasets...
+2018-03-10 21:37:49,610:INFO: - done.
+2018-03-10 21:37:49,679:INFO: Starting training for 10 epoch(s)
+2018-03-10 21:37:49,679:INFO: Epoch 1/10
+2018-03-10 21:47:35,506:INFO: Loading the datasets...
+2018-03-10 21:47:35,868:INFO: - done.
+2018-03-10 21:47:35,936:INFO: Starting training for 10 epoch(s)
+2018-03-10 21:47:35,936:INFO: Epoch 1/10
+2018-03-10 21:51:24,909:INFO: Loading the datasets...
+2018-03-10 21:51:25,271:INFO: - done.
+2018-03-10 21:51:25,340:INFO: Starting training for 10 epoch(s)
+2018-03-10 21:51:25,340:INFO: Epoch 1/10
+2018-03-10 21:54:37,901:INFO: Loading the datasets...
+2018-03-10 21:54:38,256:INFO: - done.
+2018-03-10 21:54:38,325:INFO: Starting training for 10 epoch(s)
+2018-03-10 21:54:38,325:INFO: Epoch 1/10
+2018-03-10 21:55:07,404:INFO: Loading the datasets...
+2018-03-10 21:55:07,763:INFO: - done.
+2018-03-10 21:55:07,831:INFO: Starting training for 10 epoch(s)
+2018-03-10 21:55:07,832:INFO: Epoch 1/10
+2018-03-10 21:55:20,065:INFO: Loading the datasets...
+2018-03-10 21:55:20,420:INFO: - done.
+2018-03-10 21:55:20,489:INFO: Starting training for 10 epoch(s)
+2018-03-10 21:55:20,489:INFO: Epoch 1/10
+2018-03-10 21:55:53,856:INFO: Loading the datasets...
+2018-03-10 21:55:54,221:INFO: - done.
+2018-03-10 21:55:54,290:INFO: Starting training for 10 epoch(s)
+2018-03-10 21:55:54,290:INFO: Epoch 1/10
+2018-03-10 21:56:33,476:INFO: Loading the datasets...
+2018-03-10 21:56:33,831:INFO: - done.
+2018-03-10 21:56:33,900:INFO: Starting training for 10 epoch(s)
+2018-03-10 21:56:33,900:INFO: Epoch 1/10
+2018-03-10 21:56:34,796:INFO: - Train metrics: loss: 38.283 ; accuracy: 0.000
+2018-03-10 21:56:35,298:INFO: - Eval metrics : loss: 37.944 ; accuracy: 0.000
+2018-03-10 21:56:35,637:INFO: - Found new best accuracy
+2018-03-10 21:56:35,787:INFO: Epoch 2/10
+2018-03-10 21:56:36,867:INFO: - Train metrics: loss: 38.224 ; accuracy: 0.000
+2018-03-10 21:56:37,367:INFO: - Eval metrics : loss: 37.930 ; accuracy: 0.000
+2018-03-10 21:56:37,742:INFO: - Found new best accuracy
+2018-03-10 21:56:37,857:INFO: Epoch 3/10
+2018-03-10 21:56:39,029:INFO: - Train metrics: loss: 38.231 ; accuracy: 0.000
+2018-03-10 21:56:39,431:INFO: - Eval metrics : loss: 37.925 ; accuracy: 0.000
+2018-03-10 21:56:39,730:INFO: - Found new best accuracy
+2018-03-10 21:56:39,796:INFO: Epoch 4/10
+2018-03-10 21:56:41,446:INFO: - Train metrics: loss: 38.210 ; accuracy: 0.000
+2018-03-10 21:56:41,793:INFO: - Eval metrics : loss: 37.919 ; accuracy: 0.000
+2018-03-10 21:56:42,232:INFO: - Found new best accuracy
+2018-03-10 21:56:42,428:INFO: Epoch 5/10
+2018-03-10 21:56:43,697:INFO: - Train metrics: loss: 38.153 ; accuracy: 0.000
+2018-03-10 21:56:44,168:INFO: - Eval metrics : loss: 37.922 ; accuracy: 0.000
+2018-03-10 21:56:44,530:INFO: - Found new best accuracy
+2018-03-10 21:56:44,648:INFO: Epoch 6/10
+2018-03-10 21:56:46,154:INFO: - Train metrics: loss: 38.111 ; accuracy: 0.000
+2018-03-10 21:56:46,602:INFO: - Eval metrics : loss: 37.910 ; accuracy: 0.000
+2018-03-10 21:56:46,907:INFO: - Found new best accuracy
+2018-03-10 21:56:47,036:INFO: Epoch 7/10
+2018-03-10 21:56:48,536:INFO: - Train metrics: loss: 38.070 ; accuracy: 0.000
+2018-03-10 21:56:48,928:INFO: - Eval metrics : loss: 37.896 ; accuracy: 0.000
+2018-03-10 21:56:49,289:INFO: - Found new best accuracy
+2018-03-10 21:56:49,342:INFO: Epoch 8/10
+2018-03-10 21:56:50,353:INFO: - Train metrics: loss: 38.021 ; accuracy: 0.000
+2018-03-10 21:56:50,730:INFO: - Eval metrics : loss: 37.883 ; accuracy: 0.000
+2018-03-10 21:56:51,162:INFO: - Found new best accuracy
+2018-03-10 21:56:51,355:INFO: Epoch 9/10
+2018-03-10 21:56:52,444:INFO: - Train metrics: loss: 37.978 ; accuracy: 0.000
+2018-03-10 21:56:52,847:INFO: - Eval metrics : loss: 37.868 ; accuracy: 0.000
+2018-03-10 21:56:53,143:INFO: - Found new best accuracy
+2018-03-10 21:56:53,259:INFO: Epoch 10/10
+2018-03-10 21:56:54,641:INFO: - Train metrics: loss: 37.930 ; accuracy: 0.000
+2018-03-10 21:56:55,040:INFO: - Eval metrics : loss: 37.854 ; accuracy: 0.000
+2018-03-10 21:56:55,326:INFO: - Found new best accuracy
+2018-03-10 22:18:06,702:INFO: Loading the datasets...
+2018-03-10 22:19:15,029:INFO: - done.
+2018-03-10 22:19:15,127:INFO: Starting training for 10 epoch(s)
+2018-03-10 22:19:15,127:INFO: Epoch 1/10
+2018-03-10 22:26:56,526:INFO: Loading the datasets...
+2018-03-10 22:26:57,197:INFO: - done.
+2018-03-10 22:26:57,265:INFO: Starting training for 10 epoch(s)
+2018-03-10 22:26:57,266:INFO: Epoch 1/10
+2018-03-10 22:26:58,338:INFO: - Train metrics: loss: 38.283 ; accuracy: 0.000
+2018-03-10 22:26:58,785:INFO: - Eval metrics : loss: 38.224 ; accuracy: 0.000
+2018-03-10 22:26:59,112:INFO: - Found new best accuracy
+2018-03-10 22:26:59,209:INFO: Epoch 2/10
+2018-03-10 22:27:00,392:INFO: - Train metrics: loss: 38.224 ; accuracy: 0.000
+2018-03-10 22:27:00,886:INFO: - Eval metrics : loss: 38.231 ; accuracy: 0.000
+2018-03-10 22:27:01,173:INFO: - Found new best accuracy
+2018-03-10 22:27:01,258:INFO: Epoch 3/10
+2018-03-10 22:27:02,672:INFO: - Train metrics: loss: 38.231 ; accuracy: 0.000
+2018-03-10 22:27:03,048:INFO: - Eval metrics : loss: 38.210 ; accuracy: 0.000
+2018-03-10 22:27:03,329:INFO: - Found new best accuracy
+2018-03-10 22:27:03,459:INFO: Epoch 4/10
+2018-03-10 22:27:04,998:INFO: - Train metrics: loss: 38.210 ; accuracy: 0.000
+2018-03-10 22:27:05,392:INFO: - Eval metrics : loss: 38.153 ; accuracy: 0.000
+2018-03-10 22:27:05,765:INFO: - Found new best accuracy
+2018-03-10 22:27:05,844:INFO: Epoch 5/10
+2018-03-10 22:27:06,942:INFO: - Train metrics: loss: 38.153 ; accuracy: 0.000
+2018-03-10 22:27:07,317:INFO: - Eval metrics : loss: 38.111 ; accuracy: 0.000
+2018-03-10 22:27:07,742:INFO: - Found new best accuracy
+2018-03-10 22:27:07,831:INFO: Epoch 6/10
+2018-03-10 22:27:09,236:INFO: - Train metrics: loss: 38.111 ; accuracy: 0.000
+2018-03-10 22:27:09,674:INFO: - Eval metrics : loss: 38.070 ; accuracy: 0.000
+2018-03-10 22:27:09,983:INFO: - Found new best accuracy
+2018-03-10 22:27:10,062:INFO: Epoch 7/10
+2018-03-10 22:27:11,257:INFO: - Train metrics: loss: 38.070 ; accuracy: 0.000
+2018-03-10 22:27:11,655:INFO: - Eval metrics : loss: 38.021 ; accuracy: 0.000
+2018-03-10 22:27:12,112:INFO: - Found new best accuracy
+2018-03-10 22:27:12,235:INFO: Epoch 8/10
+2018-03-10 22:27:13,596:INFO: - Train metrics: loss: 38.021 ; accuracy: 0.000
+2018-03-10 22:27:13,943:INFO: - Eval metrics : loss: 37.978 ; accuracy: 0.000
+2018-03-10 22:27:14,279:INFO: - Found new best accuracy
+2018-03-10 22:27:14,412:INFO: Epoch 9/10
+2018-03-10 22:27:15,453:INFO: - Train metrics: loss: 37.978 ; accuracy: 0.000
+2018-03-10 22:27:15,925:INFO: - Eval metrics : loss: 37.930 ; accuracy: 0.000
+2018-03-10 22:27:16,221:INFO: - Found new best accuracy
+2018-03-10 22:27:16,313:INFO: Epoch 10/10
+2018-03-10 22:27:17,407:INFO: - Train metrics: loss: 37.930 ; accuracy: 0.000
+2018-03-10 22:27:17,816:INFO: - Eval metrics : loss: 37.896 ; accuracy: 0.000
+2018-03-10 22:27:18,210:INFO: - Found new best accuracy
