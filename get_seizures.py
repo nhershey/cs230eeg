@@ -17,8 +17,8 @@ import pickle 	#used to store data
 
 # below path goes to full data set on raiders6
 # PATH_TO_DATA = "../../../../../jdunnmon/EEG/eegdbs/SEC/stanford/"
-PATH_TO_DATA = "../../../jdunnmon/EEG/pilot_eeg_dataset/data/stanford/"
-# PATH_TO_DATA = "../../../jdunnmon/EEG/eegdbs/SEC/stanford/"
+# PATH_TO_DATA = "../../../jdunnmon/EEG/pilot_eeg_dataset/data/stanford/"
+PATH_TO_DATA = "../../../jdunnmon/EEG/eegdbs/SEC/stanford/"
 # PATH_TO_DATA = "data/dummy_data/"
 SEIZURE_STRINGS = ['sz','seizure','absence','spasm']
 FREQUENCY = 200
@@ -60,9 +60,12 @@ def getRandomSlice(record):
 	maxStart = record['signals'].shape[1] - FREQUENCY * EPOCH_LENGTH_SEC
 	return sliceEpoch(orderedChannels, record['signals'], random.randint(0,maxStart))
 
+def hi():
+	print("hi")
+
 # gets all the files
 def getDataLoaders(loadSaved = True):
-	if (True):
+	if (loadSaved):
 		with open('raw_data.pickle', 'rb') as handle:
 			b = pickle.load(handle)
 			return b
@@ -70,7 +73,8 @@ def getDataLoaders(loadSaved = True):
 	filesWithoutSeizures = []
 	seizures = []
 	nonSeizures = []
-	for i in range(len(fileNames)):
+	# for i in range(len(fileNames)):
+	for i in range(10):
 		try:
 			currentFileName = PATH_TO_DATA + fileNames[i]
 			hdf = h5py.File(currentFileName)
@@ -87,7 +91,7 @@ def getDataLoaders(loadSaved = True):
 				for time in seizureTimes:
 					seizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], time)
 					if seizure is not None:
-						seizures.append((torch.FloatTensor(seizure),1))				
+						seizures.append((torch.FloatTensor(seizure),1))
 			else: # if no seizure, we randomly pull 10 seconds and call it non-seizure
 				filesWithoutSeizures.append(fileNames[i])
 				orderedChannels = getOrderedChannels(hdf['record-0']['signal_labels'])
@@ -98,6 +102,8 @@ def getDataLoaders(loadSaved = True):
 		except:
 			print(i)
 	allData = seizures + nonSeizures
+	for tense, out in allData:
+		print(tense.shape)
 	with open('raw_data.pickle', 'wb') as handle:
 		pickle.dump(allData, handle, protocol=pickle.HIGHEST_PROTOCOL)
 	return allData

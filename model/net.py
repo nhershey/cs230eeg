@@ -96,12 +96,12 @@ class Net(nn.Module):
         # since it is numerically more stable)
         # return F.log_softmax(s, dim=1)
 
-        # s = F.relu(self.fc_1(s))   # batch_size x self.num_channels*4
-        # s = self.fc_2(s)
-        # return F.log_softmax(s, dim=1)
-        s, _ = self.lstm(s) # because lstm returns all hidden states and final hidden state
-        s = self.fc(s)
+        s = F.relu(self.fc_1(s))   # batch_size x self.num_channels*4
+        s = self.fc_2(s)
         return F.log_softmax(s, dim=1)
+        # s, _ = self.lstm(s) # because lstm returns all hidden states and final hidden state
+        # s = self.fc(s)
+        # return F.log_softmax(s, dim=1)
 
 
 def loss_fn(outputs, labels):
