@@ -77,7 +77,7 @@ class SIGNSDataset(Dataset):
             transform: (torchvision.transforms) transformation to apply on image
         """
         self.filenames = os.listdir(data_dir)
-        total = 10 #len(self.filenames)
+        total = len(self.filenames)
         if split_type == 'train':
             self.filenames = self.filenames[ : int(total * 0.8)]
         elif split_type == 'val':
@@ -103,34 +103,37 @@ class SIGNSDataset(Dataset):
             image: (Tensor) transformed image
             label: (int) corresponding label of image
         """
-        currentFileName = self.data_dir + self.filenames[idx]
-        hdf = h5py.File(currentFileName)
-        annot = hdf['record-0']['edf_annotations']
-        antext = [s.decode('utf-8') for s in annot['texts'][:]]
-        starts100ns = [xx for xx in annot['starts_100ns'][:]]
-        df = pd.DataFrame(data=antext, columns=['text'])
-        df['starts100ns'] = starts100ns
-        df['starts_sec'] = df['starts100ns']/10**7
-        seizureDF = df[df.text.str.contains('|'.join(SEIZURE_STRINGS),case=False)]
-        orderedChannels = getOrderedChannels(hdf['record-0']['signal_labels'])
-        if orderedChannels == None:
-            return self.lastSeizure
+        try:
+            currentFileName = self.data_dir + self.filenames[idx]
+            hdf = h5py.File(currentFileName)
+            annot = hdf['record-0']['edf_annotations']
+            antext = [s.decode('utf-8') for s in annot['texts'][:]]
+            starts100ns = [xx for xx in annot['starts_100ns'][:]]
+            df = pd.DataFrame(data=antext, columns=['text'])
+            df['starts100ns'] = starts100ns
+            df['starts_sec'] = df['starts100ns']/10**7
+            seizureDF = df[df.text.str.contains('|'.join(SEIZURE_STRINGS),case=False)]
+            orderedChannels = getOrderedChannels(hdf['record-0']['signal_labels'])
+            if orderedChannels == None:
+                return self.lastSeizure
 
-        if seizureDF.empty:
-            nonSeizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], random.randint(0,1.0))
-            nonSeizure = torch.FloatTensor(nonSeizure)
-            if nonSeizure.shape != self.lastSeizure[0].shape:
-                # print("uh oh")
+            if seizureDF.empty:
+                nonSeizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], random.randint(0,1.0))
+                nonSeizure = torch.FloatTensor(nonSeizure)
+                if nonSeizure.shape != self.lastSeizure[0].shape:
+                    # print("uh oh")
+                    return self.lastSeizure
+                return (nonSeizure, 0)
+            else:
+                seizureTimes = seizureDF['starts_sec'].tolist()
+                seizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], seizureTimes[0])
+                seizure = torch.FloatTensor(seizure)
+                if seizure.shape != self.lastSeizure[0].shape:
+                    # print("uh oh")
+                    return self.lastSeizure
+                self.lastSeizure = (seizure, 1)
                 return self.lastSeizure
-            return (nonSeizure, 0)
-        else:
-            seizureTimes = seizureDF['starts_sec'].tolist()
-            seizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], seizureTimes[0])
-            seizure = torch.FloatTensor(seizure)
-            if seizure.shape != self.lastSeizure[0].shape:
-                # print("uh oh")
-                return self.lastSeizure
-            self.lastSeizure = (seizure, 1)
+        except:
             return self.lastSeizure
 
 
