@@ -46,7 +46,7 @@ def sliceEpoch(orderedChannels, signals, sliceTime):
         sliceTime = randint(0, maxStart)
         sliceTime /= FREQUENCY
     startTime = int(FREQUENCY * sliceTime)
-    endTime = int(FREQUENCY * (sliceTime + EPOCH_LENGTH_SEC))
+    endTime = startTime + int(FREQUENCY * EPOCH_LENGTH_SEC)
     sliceMatrix = signals[orderedChannels,  startTime : endTime]
 
     # standardize by row
@@ -58,7 +58,7 @@ def sliceEpoch(orderedChannels, signals, sliceTime):
     diff = FREQUENCY * EPOCH_LENGTH_SEC - sliceMatrix.shape[1]
     if diff > 0:
         zeros = np.zeros((sliceMatrix.shape[0], diff))
-        sliceMatrix = np.concatenate((sliceMatrix, zeros))
+        sliceMatrix = np.concatenate((sliceMatrix, zeros), axis=1)
 
     sliceMatrix = sliceMatrix.T
     return sliceMatrix
@@ -111,7 +111,7 @@ class SIGNSDataset(Dataset):
         """
         self.file_tuples = parseTxtFiles(PATH_TO_FILENAMES + "seizures_marked.txt", 
                                             PATH_TO_FILENAMES + "nonSeizures_marked.txt")
-        total = 10 #len(self.file_tuples)
+        total = len(self.file_tuples)
         if split_type == 'train':
             self.file_tuples = self.file_tuples[ : int(total * 0.8)]
         elif split_type == 'val':
