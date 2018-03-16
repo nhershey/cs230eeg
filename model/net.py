@@ -138,9 +138,18 @@ def accuracy(outputs, labels):
     # import ipdb; ipdb.set_trace()
     return accuracy
 
+def f1score(outputs, labels):
+    outputs = np.rint(outputs)
+    labels = labels.reshape(outputs.shape)
+    numerator = np.sum(outputs == labels)
+    precision = 1.0 * numerator / outputs.sum()
+    recall = 1.0 * numerator / labels.sum()
+    f1 = 2 * (precision * recall) / (precision + recall)
+    return f1
+
 
 # maintain all metrics required in this dictionary- these are used in the training and evaluation loops
 metrics = {
     'accuracy': accuracy,
-    # could add more metrics such as accuracy for each token type
+    'f1': f1score,
 }

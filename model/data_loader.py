@@ -50,9 +50,11 @@ def sliceEpoch(orderedChannels, signals, sliceTime):
     sliceMatrix = signals[orderedChannels,  startTime : endTime]
 
     # standardize by row
-    row_sums = sliceMatrix.sum(axis=1)
-    row_sums = row_sums[:, np.newaxis]
-    sliceMatrix = sliceMatrix * 1.0 / row_sums
+    row_max = sliceMatrix.max(axis=1)
+    row_max = row_max[:, np.newaxis]
+    row_max = np.abs(row_max)
+    row_max = np.maximum(row_max, 1e-8) #for numerical stability
+    sliceMatrix = sliceMatrix * 1.0 / row_max
 
     # pad if necessary
     diff = FREQUENCY * EPOCH_LENGTH_SEC - sliceMatrix.shape[1]
@@ -111,7 +113,7 @@ class SIGNSDataset(Dataset):
         """
         self.file_tuples = parseTxtFiles(PATH_TO_FILENAMES + "seizures_marked.txt", 
                                             PATH_TO_FILENAMES + "nonSeizures_marked.txt")
-        total = len(self.file_tuples)
+        total = 10 #len(self.file_tuples)
         if split_type == 'train':
             self.file_tuples = self.file_tuples[ : int(total * 0.8)]
         elif split_type == 'val':
