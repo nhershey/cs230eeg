@@ -40,7 +40,7 @@ class Net(nn.Module):
         # each of the convolution layers below have the arguments (input_channels, output_channels, filter_size,
         # stride, padding). We also include batch normalisation layers that help stabilise training.
         # For more details on how to use these layers, check out the documentation.
-        self.conv1 = nn.Conv2d(3, self.num_channels, 3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(1, self.num_channels, 3, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(self.num_channels)
         self.conv2 = nn.Conv2d(self.num_channels, self.num_channels*2, 3, stride=1, padding=1)
         self.bn2 = nn.BatchNorm2d(self.num_channels*2)
@@ -48,13 +48,13 @@ class Net(nn.Module):
         self.bn3 = nn.BatchNorm2d(self.num_channels*4)
 
         # 2 fully connected layers to transform the output of the convolution layers to the final output
-        self.fc1 = nn.Linear(8*8*self.num_channels*4, self.num_channels*4)
+        self.fc1 = nn.Linear(250*3*self.num_channels*4, self.num_channels*4)
         self.fcbn1 = nn.BatchNorm1d(self.num_channels*4)
-        self.fc2 = nn.Linear(self.num_channels*4, 6)
+        self.fc2 = nn.Linear(self.num_channels*4, 1)
         self.dropout_rate = params.dropout_rate
 
         self.fc_1 = nn.Linear(50000,100)
-        self.fc_2 = nn.Linear(100,2)
+        self.fc_2 = nn.Linear(100,1)
 
         # the LSTM takes as input the size of its input (embedding_dim), its hidden size
         # for more details on how to use it, check out the documentation
@@ -75,30 +75,31 @@ class Net(nn.Module):
 
         Note: the dimensions after each step are provided
         """
-        #                                                  -> batch_size x 3 x 64 x 64
-        # we apply the convolution layers, followed by batch normalisation, maxpool and relu x 3
-        # s = self.bn1(self.conv1(s))                         # batch_size x num_channels x 64 x 64
-        # s = F.relu(F.max_pool2d(s, 2))                      # batch_size x num_channels x 32 x 32
-        # s = self.bn2(self.conv2(s))                         # batch_size x num_channels*2 x 32 x 32
-        # s = F.relu(F.max_pool2d(s, 2))                      # batch_size x num_channels*2 x 16 x 16
-        # s = self.bn3(self.conv3(s))                         # batch_size x num_channels*4 x 16 x 16
-        # s = F.relu(F.max_pool2d(s, 2))                      # batch_size x num_channels*4 x 8 x 8
+        #                                                  -> batch_size x 1 x 2000 x 25
+        # # we apply the convolution layers, followed by batch normalisation, maxpool and relu x 3
+        # s = s.unsqueeze(1)
+        # s = self.bn1(self.conv1(s))                         # batch_size x num_channels x 2000 x 25
+        # s = F.relu(F.max_pool2d(s, 2))                      # batch_size x num_channels x 1000 x 12
+        # s = self.bn2(self.conv2(s))                         # batch_size x num_channels*2 x 1000 x 12
+        # s = F.relu(F.max_pool2d(s, 2))                      # batch_size x num_channels*2 x 500 x 6
+        # s = self.bn3(self.conv3(s))                         # batch_size x num_channels*4 x 500 x 6
+        # s = F.relu(F.max_pool2d(s, 2))                      # batch_size x num_channels*4 x 250 x 3
 
-        # flatten the output for each image
-        # s = s.view(-1, 8*8*self.num_channels*4)             # batch_size x 8*8*num_channels*4
-
-        # apply 2 fully connected layers with dropout
+        # # flatten the output for each image
+        # s = s.view(-1, 250*3*self.num_channels*4)             # batch_size x 8*8*num_channels*4
+        # # apply 2 fully connected layers with dropout
         # s = F.dropout(F.relu(self.fcbn1(self.fc1(s))),
         #     p=self.dropout_rate, training=self.training)    # batch_size x self.num_channels*4
         # s = self.fc2(s)                                     # batch_size x 6
 
-        # apply log softmax on each image's output (this is recommended over applying softmax
-        # since it is numerically more stable)
-        # return F.log_softmax(s, dim=1)
+        # # apply log softmax on each image's output (this is recommended over applying softmax
+        # # since it is numerically more stable)
+        # return F.sigmoid(s)
 
-        s = F.relu(self.fc_1(s))   # batch_size x self.num_channels*4
+        s = s.view(-1, 50000) 
+        s = F.relu(self.fc_1(s))
         s = self.fc_2(s)
-        return F.log_softmax(s, dim=1)
+        return F.sigmoid(s)
         # s, _ = self.lstm(s) # because lstm returns all hidden states and final hidden state
         # s = self.fc(s)
         # return F.log_softmax(s, dim=1)
@@ -118,8 +119,8 @@ def loss_fn(outputs, labels):
     Note: you may use a standard loss function from http://pytorch.org/docs/master/nn.html#loss-functions. This example
           demonstrates how you can easily define a custom loss function.
     """
-    num_examples = outputs.size()[0]
-    return -torch.sum(outputs[range(num_examples), labels])/num_examples
+    loss = nn.BCELoss()
+    return loss(outputs.float(), labels.float())
 
 
 def accuracy(outputs, labels):
@@ -132,8 +133,11 @@ def accuracy(outputs, labels):
 
     Returns: (float) accuracy in [0,1]
     """
-    outputs = np.argmax(outputs, axis=1)
-    return np.sum(outputs==labels)/float(labels.size)
+    outputs = np.rint(outputs)
+    labels = labels.reshape(outputs.shape)
+    accuracy = np.sum(outputs==labels)/float(labels.size)
+    # import ipdb; ipdb.set_trace()
+    return accuracy
 
 
 # maintain all metrics required in this dictionary- these are used in the training and evaluation loops

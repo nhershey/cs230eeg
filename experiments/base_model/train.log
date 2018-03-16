@@ -394,3 +394,7 @@
 2018-03-13 18:14:01,388:INFO: Epoch 3/3
 2018-03-13 18:14:47,532:INFO: - Train metrics: accuracy: 0.750 ; loss: 1629.064
 2018-03-13 18:14:49,720:INFO: - Eval metrics : accuracy: 0.610 ; loss: 13200.048
+2018-03-15 19:44:24,464:INFO: Loading the datasets...
+2018-03-15 19:44:24,597:INFO: - done.
+2018-03-15 19:44:24,665:INFO: Starting training for 3 epoch(s)
+2018-03-15 19:44:24,665:INFO: Epoch 1/3
