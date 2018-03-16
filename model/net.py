@@ -141,7 +141,7 @@ def accuracy(outputs, labels):
 def f1score(outputs, labels):
     outputs = np.rint(outputs)
     labels = labels.reshape(outputs.shape)
-    numerator = np.sum(outputs == labels)
+    numerator = np.sum(np.logical_and(outputs == 1, outputs == labels))
     precision = 1.0 * numerator / outputs.sum()
     recall = 1.0 * numerator / labels.sum()
     f1 = 2 * (precision * recall) / (precision + recall)

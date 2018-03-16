@@ -113,7 +113,7 @@ class SIGNSDataset(Dataset):
         """
         self.file_tuples = parseTxtFiles(PATH_TO_FILENAMES + "seizures_marked.txt", 
                                             PATH_TO_FILENAMES + "nonSeizures_marked.txt")
-        total = 10 #len(self.file_tuples)
+        total = 100 #len(self.file_tuples)
         if split_type == 'train':
             self.file_tuples = self.file_tuples[ : int(total * 0.8)]
         elif split_type == 'val':
