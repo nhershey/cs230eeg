@@ -12,13 +12,12 @@ from collections import Counter
 import random
 import torch
 from torch.utils.data import DataLoader, TensorDataset
-
-import pickle 	#used to store data
+from tqdm import tqdm
 
 # below path goes to full data set on raiders6
 # PATH_TO_DATA = "../../../../../jdunnmon/EEG/eegdbs/SEC/stanford/"
 # PATH_TO_DATA = "../../../jdunnmon/EEG/pilot_eeg_dataset/data/stanford/"
-PATH_TO_DATA = "../../../jdunnmon/EEG/eegdbs/SEC/stanford/"
+PATH_TO_DATA = "../../../jdunnmon/data/EEG/eegdbs/SEC/stanford/"
 # PATH_TO_DATA = "data/dummy_data/"
 SEIZURE_STRINGS = ['sz','seizure','absence','spasm']
 FREQUENCY = 200
@@ -60,21 +59,15 @@ def getRandomSlice(record):
 	maxStart = record['signals'].shape[1] - FREQUENCY * EPOCH_LENGTH_SEC
 	return sliceEpoch(orderedChannels, record['signals'], random.randint(0,maxStart))
 
-def hi():
-	print("hi")
-
 # gets all the files
-def getDataLoaders(loadSaved = True):
-	if (loadSaved):
-		with open('raw_data.pickle', 'rb') as handle:
-			b = pickle.load(handle)
-			return b
+def getDataLoaders():
 	fileNames =  os.listdir(PATH_TO_DATA)
-	filesWithoutSeizures = []
 	seizures = []
 	nonSeizures = []
+	seizure_files = []
+	nonSeizure_files = []
 	# for i in range(len(fileNames)):
-	for i in range(10):
+	for i in tqdm(range(len(fileNames))):
 		try:
 			currentFileName = PATH_TO_DATA + fileNames[i]
 			hdf = h5py.File(currentFileName)
@@ -91,25 +84,29 @@ def getDataLoaders(loadSaved = True):
 				for time in seizureTimes:
 					seizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], time)
 					if seizure is not None:
-						seizures.append((torch.FloatTensor(seizure),1))
-			else: # if no seizure, we randomly pull 10 seconds and call it non-seizure
-				filesWithoutSeizures.append(fileNames[i])
+						# seizures.append((torch.FloatTensor(seizure),1))
+						seizure_files.append(fileNames[i])
+			else: 
 				orderedChannels = getOrderedChannels(hdf['record-0']['signal_labels'])
 				maxStart = float(hdf['record-0']['signals'].shape[1] - FREQUENCY * EPOCH_LENGTH_SEC)
 				nonSeizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], random.randint(0,1000.0))
-				nonSeizures.append((torch.FloatTensor(nonSeizure),0))
+				# nonSeizures.append((torch.FloatTensor(nonSeizure),0))
+				nonSeizure_files.append(fileNames[i])
 			hdf.close()
 		except:
-			print(i)
+			print(i, " failed.")
+	seizurefile = open('files/seizures.txt', 'w+')
+	for item in seizure_files:
+		seizurefile.write("%s\n" % item)
+	nonSeizurefile = open('files/non_seizures.txt', 'w+')
+	for item in nonSeizure_files:
+		nonSeizurefile.write("%s\n" % item)
+
 	allData = seizures + nonSeizures
-	for tense, out in allData:
-		print(tense.shape)
-	with open('raw_data.pickle', 'wb') as handle:
-		pickle.dump(allData, handle, protocol=pickle.HIGHEST_PROTOCOL)
 	return allData
 
 def main():
-	getDataLoaders(loadSaved = False)
+	getDataLoaders()
 
 if __name__ == "__main__":
     main()
