@@ -102,7 +102,6 @@ class SIGNSDataset(Dataset):
     A standard PyTorch definition of Dataset which defines the functions __len__ and __getitem__.
     """
     
-
     def __init__(self, data_dir, split_type):
         """
         Store the filenames of the jpgs to use. Specifies transforms to apply on images.
@@ -113,7 +112,7 @@ class SIGNSDataset(Dataset):
         """
         self.file_tuples = parseTxtFiles(PATH_TO_FILENAMES + "seizures_marked.txt", 
                                             PATH_TO_FILENAMES + "nonSeizures_marked.txt")
-        total = len(self.file_tuples)
+        total = 100 #len(self.file_tuples)
         if split_type == 'train':
             self.file_tuples = self.file_tuples[ : int(total * 0.8)]
         elif split_type == 'val':

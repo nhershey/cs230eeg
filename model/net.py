@@ -36,34 +36,36 @@ class Net(nn.Module):
         """
         super(Net, self).__init__()
         self.type = params.type
-        self.num_channels = params.num_channels
 
-        # each of the convolution layers below have the arguments (input_channels, output_channels, filter_size,
-        # stride, padding). We also include batch normalisation layers that help stabilise training.
-        # For more details on how to use these layers, check out the documentation.
-        self.conv1 = nn.Conv2d(1, self.num_channels, 3, stride=1, padding=1)
-        self.bn1 = nn.BatchNorm2d(self.num_channels)
-        self.conv2 = nn.Conv2d(self.num_channels, self.num_channels*2, 3, stride=1, padding=1)
-        self.bn2 = nn.BatchNorm2d(self.num_channels*2)
-        self.conv3 = nn.Conv2d(self.num_channels*2, self.num_channels*4, 3, stride=1, padding=1)
-        self.bn3 = nn.BatchNorm2d(self.num_channels*4)
+        if self.type == "conv":
+            self.num_channels = params.num_channels
+            # each of the convolution layers below have the arguments (input_channels, output_channels, filter_size,
+            # stride, padding). We also include batch normalisation layers that help stabilise training.
+            # For more details on how to use these layers, check out the documentation.
+            self.conv1 = nn.Conv2d(1, self.num_channels, 3, stride=1, padding=1)
+            self.bn1 = nn.BatchNorm2d(self.num_channels)
+            self.conv2 = nn.Conv2d(self.num_channels, self.num_channels*2, 3, stride=1, padding=1)
+            self.bn2 = nn.BatchNorm2d(self.num_channels*2)
+            self.conv3 = nn.Conv2d(self.num_channels*2, self.num_channels*4, 3, stride=1, padding=1)
+            self.bn3 = nn.BatchNorm2d(self.num_channels*4)
 
-        # 2 fully connected layers to transform the output of the convolution layers to the final output
-        self.fc1 = nn.Linear(250*3*self.num_channels*4, self.num_channels*4)
-        self.fcbn1 = nn.BatchNorm1d(self.num_channels*4)
-        self.fc2 = nn.Linear(self.num_channels*4, 1)
-        self.dropout_rate = params.dropout_rate
+            # 2 fully connected layers to transform the output of the convolution layers to the final output
+            self.fc1 = nn.Linear(250*3*self.num_channels*4, self.num_channels*4)
+            self.fcbn1 = nn.BatchNorm1d(self.num_channels*4)
+            self.fc2 = nn.Linear(self.num_channels*4, 1)
+            self.dropout_rate = params.dropout_rate
+        
+        elif self.type == "base":
+            # simple base model
+            self.fc_1 = nn.Linear(50000,100)
+            self.fc_2 = nn.Linear(100,1)
 
-        # simple base model
-        self.fc_1 = nn.Linear(50000,100)
-        self.fc_2 = nn.Linear(100,1)
-
-        # the LSTM takes as input the size of its input (embedding_dim), its hidden size
-        # for more details on how to use it, check out the documentation
-        self.lstm = nn.LSTM(25, 20, batch_first=True)
-
-        # the fully connected layer transforms the output to give the final output layer
-        self.fc = nn.Linear(20, 5)
+        elif self.type == "lstm":
+            # input_size, hidden_size, num_layers
+            # self.lstm = nn.LSTM(25, 20, 2000, batch_first=True, bidirectional=True)
+            self.lstm = nn.LSTM(25, 20, 2)
+            # the fully connected layer transforms the output to give the final output layer
+            self.fc = nn.Linear(20, 1)
 
     def forward(self, s):
         """
@@ -77,9 +79,9 @@ class Net(nn.Module):
 
         Note: the dimensions after each step are provided
         """
-        if (self.type == "conv"): #                                   -> batch_size x 1 x 2000 x 25
+        if (self.type == "conv"):
             # we apply the convolution layers, followed by batch normalisation, maxpool and relu x 3
-            s = s.unsqueeze(1)
+            s = s.unsqueeze(1)                                  # -> batch_size x 1 x 2000 x 25
             s = self.bn1(self.conv1(s))                         # batch_size x num_channels x 2000 x 25
             s = F.relu(F.max_pool2d(s, 2))                      # batch_size x num_channels x 1000 x 12
             s = self.bn2(self.conv2(s))                         # batch_size x num_channels*2 x 1000 x 12
@@ -94,14 +96,23 @@ class Net(nn.Module):
                 p=self.dropout_rate, training=self.training)    # batch_size x self.num_channels*4
             s = self.fc2(s)                                     # batch_size x 6
             return F.sigmoid(s)
+
         elif (self.type == "base"):
             s = s.view(-1, 50000) 
             s = F.relu(self.fc_1(s))
             s = self.fc_2(s)
             return F.sigmoid(s)
-        # s, _ = self.lstm(s) # because lstm returns all hidden states and final hidden state
-        # s = self.fc(s)
-        # return F.log_softmax(s, dim=1)
+
+        elif (self.type == "lstm"):
+            # -> batch_size x 2000 x 25
+            # -> 2000 x batch_size x 25
+            s = s.transpose(0, 1)
+            # Forward propagate RNN
+            out, _ = self.lstm(s)  
+            # Decode hidden state of last time step (seq_len, batch, hidden_size * num_directions)
+            last_out = out[-1,:,:]
+            out = self.fc(last_out)  
+            return F.sigmoid(out)
 
 
 def loss_fn(outputs, labels):
@@ -118,8 +129,11 @@ def loss_fn(outputs, labels):
     Note: you may use a standard loss function from http://pytorch.org/docs/master/nn.html#loss-functions. This example
           demonstrates how you can easily define a custom loss function.
     """
+    # ((1-labels.float()) * torch.log(1 - outputs) + labels.float() * torch.log(outputs)).mean()
     loss = nn.BCELoss()
-    return loss(outputs.float(), labels.float())
+    outputs = outputs.squeeze()
+    out = loss(outputs, labels.float())
+    return out
 
 
 def accuracy(outputs, labels):
@@ -139,11 +153,15 @@ def accuracy(outputs, labels):
     return accuracy
 
 def f1score(outputs, labels):
-    outputs = np.rint(outputs)
-    labels = labels.reshape(outputs.shape)
-    numerator = np.sum(np.logical_and(outputs == 1, outputs == labels))
-    precision = 1.0 * numerator / outputs.sum()
-    recall = 1.0 * numerator / labels.sum()
+    outputs_round = np.rint(outputs)
+    labels = labels.reshape(outputs_round.shape)
+    numerator = np.sum(np.logical_and(outputs_round == 1, outputs_round == labels))
+    precision_denom = max(outputs_round.sum(), 1e-8)
+    recall_denom = max(labels.sum(), 1e-8)
+    precision = 1.0 * numerator / precision_denom
+    recall = 1.0 * numerator / recall_denom
+    if (precision + recall == 0):
+        return 0
     f1 = 2 * (precision * recall) / (precision + recall)
     return f1
 
