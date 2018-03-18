@@ -1,3 +1,12 @@
+"""Prints out a list of file names of seizures with the desired channels.
+	Each line in the file is of the form "filename,i" where i is
+	- -1 if the file contains no seizures
+	- 0 to n to represent the ith seizure in that file
+	That is, for a file with n seizures, there will be n entries of "file,i" 
+	The files are output to
+    - marked_files/seizures.txt
+    - marked_files/nonSeizures.txt"""
+
 from __future__ import print_function, division, unicode_literals
 
 import pandas as pd
@@ -15,21 +24,14 @@ from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 
 # below path goes to full data set on raiders6
-# PATH_TO_DATA = "../../../../../jdunnmon/EEG/eegdbs/SEC/stanford/"
-# PATH_TO_DATA = "../../../jdunnmon/EEG/pilot_eeg_dataset/data/stanford/"
 PATH_TO_DATA = "../../../jdunnmon/data/EEG/eegdbs/SEC/stanford/"
-# PATH_TO_DATA = "data/dummy_data/"
 SEIZURE_STRINGS = ['sz','seizure','absence','spasm']
-FREQUENCY = 200
-EPOCH_LENGTH_SEC = 10
 INCLUDED_CHANNELS = ['EEG Fp1', 'EEG Fp2', 'EEG F3', 'EEG F4', 'EEG C3', 'EEG C4', 'EEG P3', 'EEG P4',
 'EEG O1', 'EEG O2', 'EEG F7', 'EEG F8', 'EEG T3', 'EEG T4', 'EEG T5', 'EEG T6', 'EEG Fz', 'EEG Cz', 'EEG Pz',
 'EEG Pg1', 'EEG Pg2', 'EEG A1', 'EEG A2', 'EEG FT9', 'EEG FT10']
 
-random.seed(1)
-
 # gets the indices of the desired channels in a labelsObject
-def getOrderedChannels(labelsObject):
+def getOrderedChannels(fileName, labelsObject):
 	labels = list(labelsObject)
 	for i in range(0, len(labels)): # needed because might come as b strings....
 		labels[i] = labels[i].decode("utf")
@@ -38,75 +40,53 @@ def getOrderedChannels(labelsObject):
 		try:
 			orderedChannels.append(labels.index(ch))
 		except:
-			print("failed to get channel " + ch)
+			print(fileName + " failed to get channel " + ch)
 			return None
 	return orderedChannels
 
-# slices a signals matrix at sliceTime
-def sliceEpoch(orderedChannels, signals, sliceTime):
-	startTime = int(FREQUENCY * sliceTime)
-	endTime = int(FREQUENCY * (sliceTime + EPOCH_LENGTH_SEC))
-	sliceMatrix = signals[orderedChannels,  startTime : endTime]
-	return sliceMatrix.T
-	# sliceVector = np.ndarray.flatten(sliceMatrix)
-	# return sliceVector
-
-# gets a random slice from a record
-def getRandomSlice(record):
-	orderedChannels = getOrderedChannels(record['signal_labels'])
-	if orderedChannels == None:
-		return None
-	maxStart = record['signals'].shape[1] - FREQUENCY * EPOCH_LENGTH_SEC
-	return sliceEpoch(orderedChannels, record['signals'], random.randint(0,maxStart))
+def getSeizureTimes(hdf):
+	annot = hdf['record-0']['edf_annotations']
+	antext = [s.decode('utf-8') for s in annot['texts'][:]]
+	starts100ns = [xx for xx in annot['starts_100ns'][:]]
+	df = pd.DataFrame(data=antext, columns=['text'])
+	df['starts100ns'] = starts100ns
+	df['starts_sec'] = df['starts100ns']/10**7
+	return df[df.text.str.contains('|'.join(SEIZURE_STRINGS),case=False)]
 
 # gets all the files
-def getDataLoaders():
+def getSeizureTuples():
 	fileNames =  os.listdir(PATH_TO_DATA)
-	seizures = []
-	nonSeizures = []
-	seizure_files = []
-	nonSeizure_files = []
-	# for i in range(len(fileNames)):
+	seizure_tuples = []
+	nonSeizure_tuples = []
 	for i in tqdm(range(len(fileNames))):
 		try:
 			currentFileName = PATH_TO_DATA + fileNames[i]
 			hdf = h5py.File(currentFileName)
-			annot = hdf['record-0']['edf_annotations']
-			antext = [s.decode('utf-8') for s in annot['texts'][:]]
-			starts100ns = [xx for xx in annot['starts_100ns'][:]]
-			df = pd.DataFrame(data=antext, columns=['text'])
-			df['starts100ns'] = starts100ns
-			df['starts_sec'] = df['starts100ns']/10**7
-			seizureDF = df[df.text.str.contains('|'.join(SEIZURE_STRINGS),case=False)]
+			orderedChannels = getOrderedChannels(fileNames[i], hdf['record-0']['signal_labels'])
+			seizureDF = getSeizureTimes(hdf)
 			if not seizureDF.empty: # i.e., it contains a seizure annotation
 				seizureTimes = seizureDF['starts_sec'].tolist()
-				orderedChannels = getOrderedChannels(hdf['record-0']['signal_labels'])
+				num_seizures_in_file = 0
 				for time in seizureTimes:
-					seizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], time)
-					if seizure is not None:
-						# seizures.append((torch.FloatTensor(seizure),1))
-						seizure_files.append(fileNames[i])
-			else: 
-				orderedChannels = getOrderedChannels(hdf['record-0']['signal_labels'])
-				maxStart = float(hdf['record-0']['signals'].shape[1] - FREQUENCY * EPOCH_LENGTH_SEC)
-				nonSeizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], random.randint(0,1000.0))
-				# nonSeizures.append((torch.FloatTensor(nonSeizure),0))
-				nonSeizure_files.append(fileNames[i])
+					seizure_tuples.append((fileNames[i], num_seizures_in_file))
+					num_seizures_in_file += 1
+			else:
+				nonSeizure_tuples.append((fileNames[i], -1))
 			hdf.close()
 		except:
 			print(i, " failed.")
-	seizurefile = open('files/seizures.txt', 'w+')
-	for item in seizure_files:
-		seizurefile.write("%s\n" % item)
-	nonSeizurefile = open('files/non_seizures.txt', 'w+')
-	for item in nonSeizure_files:
-		nonSeizurefile.write("%s\n" % item)
+	writeToFile(seizure_tuples, nonSeizure_tuples)
 
-	allData = seizures + nonSeizures
-	return allData
-
-def main():
-	getDataLoaders()
+def writeToFile(seizure_tuples, nonSeizure_tuples):
+	seizure_file = open('file_markers/seizures.txt', 'w+')
+	for name, count in seizure_tuples:
+		seizure_file.write("%s,%s\n" % (name, count))
+	
+	non_seizure_file = open('file_markers/nonSeizures.txt', 'w+')
+	for name, count in nonSeizure_tuples:
+		non_seizure_file.write("%s,%s\n" % (name, count))
 
 if __name__ == "__main__":
-    main()
+    getSeizureTuples()
+
+

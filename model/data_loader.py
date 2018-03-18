@@ -110,8 +110,8 @@ class SIGNSDataset(Dataset):
             data_dir: (string) directory containing the dataset
             transform: (torchvision.transforms) transformation to apply on image
         """
-        self.file_tuples = parseTxtFiles(PATH_TO_FILENAMES + "seizures_marked.txt", 
-                                            PATH_TO_FILENAMES + "nonSeizures_marked.txt")
+        self.file_tuples = parseTxtFiles(PATH_TO_FILENAMES + "seizures.txt", 
+                                            PATH_TO_FILENAMES + "nonSeizures.txt")
         total = len(self.file_tuples)
         if split_type == 'train':
             self.file_tuples = self.file_tuples[ : int(total * 0.8)]
