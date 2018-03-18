@@ -760,3 +760,4 @@
 2018-03-17 21:43:38,837:INFO: - done.
 2018-03-17 21:43:38,889:INFO: Starting training for 10 epoch(s)
 2018-03-17 21:43:38,889:INFO: Epoch 1/10
+2018-03-17 22:09:00,486:INFO: - Train metrics: f1: 0.508 ; accuracy: 0.550 ; loss: 0.825
