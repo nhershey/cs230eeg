@@ -15,7 +15,8 @@ INCLUDED_CHANNELS = ['EEG Fp1', 'EEG Fp2', 'EEG F3', 'EEG F4', 'EEG C3', 'EEG C4
 'EEG O1', 'EEG O2', 'EEG F7', 'EEG F8', 'EEG T3', 'EEG T4', 'EEG T5', 'EEG T6', 'EEG Fz', 'EEG Cz', 'EEG Pz',
 'EEG Pg1', 'EEG Pg2', 'EEG A1', 'EEG A2', 'EEG FT9', 'EEG FT10']
 # PATH_TO_DATA = "../../../jdunnmon/EEG/eegdbs/SEC/stanford/"
-PATH_TO_DATA = "../../../jdunnmon/data/EEG/eegdbs/SEC/stanford/"
+#PATH_TO_DATA = "../../../jdunnmon/data/EEG/eegdbs/SEC/stanford/"
+PATH_TO_DATA = "/mnt/data1/eegdbs/SEC-0.1/stanford/" 
 PATH_TO_FILENAMES = "file_markers/"
 
 
