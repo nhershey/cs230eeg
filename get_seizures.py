@@ -22,16 +22,19 @@ import random
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
+import argparse
 
 # below path goes to full data set on raiders6
-PATH_TO_DATA = "../../../jdunnmon/data/EEG/eegdbs/SEC/stanford/"
+parser = argparse.ArgumentParser()
+parser.add_argument('--data_dir', default='../../../jdunnmon/data/EEG/eegdbs/SEC/stanford/', help="Directory containing the dataset")
+parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
 SEIZURE_STRINGS = ['sz','seizure','absence','spasm']
 INCLUDED_CHANNELS = ['EEG Fp1', 'EEG Fp2', 'EEG F3', 'EEG F4', 'EEG C3', 'EEG C4', 'EEG P3', 'EEG P4',
 'EEG O1', 'EEG O2', 'EEG F7', 'EEG F8', 'EEG T3', 'EEG T4', 'EEG T5', 'EEG T6', 'EEG Fz', 'EEG Cz', 'EEG Pz',
 'EEG Pg1', 'EEG Pg2', 'EEG A1', 'EEG A2', 'EEG FT9', 'EEG FT10']
 
 # gets the indices of the desired channels in a labelsObject
-def getOrderedChannels(fileName, labelsObject):
+def getOrderedChannels(verbose, fileName, labelsObject):
 	labels = list(labelsObject)
 	for i in range(0, len(labels)): # needed because might come as b strings....
 		labels[i] = labels[i].decode("utf")
@@ -40,7 +43,8 @@ def getOrderedChannels(fileName, labelsObject):
 		try:
 			orderedChannels.append(labels.index(ch))
 		except:
-			print(fileName + " failed to get channel " + ch)
+			if (verbose): 
+				print(fileName + " failed to get channel " + ch)
 			return None
 	return orderedChannels
 
@@ -54,15 +58,16 @@ def getSeizureTimes(hdf):
 	return df[df.text.str.contains('|'.join(SEIZURE_STRINGS),case=False)]
 
 # gets all the files
-def getSeizureTuples():
-	fileNames =  os.listdir(PATH_TO_DATA)
+def getSeizureTuples(filepath, verbose):
+	fileNames = os.listdir(filepath)
 	seizure_tuples = []
 	nonSeizure_tuples = []
-	for i in tqdm(range(len(fileNames))):
+	for i in range(10): #tqdm(range(len(fileNames))):
 		try:
-			currentFileName = PATH_TO_DATA + fileNames[i]
+			currentFileName = filepath + fileNames[i]
+			print(currentFileName)
 			hdf = h5py.File(currentFileName)
-			orderedChannels = getOrderedChannels(fileNames[i], hdf['record-0']['signal_labels'])
+			orderedChannels = getOrderedChannels(fileNames[i], verbose, hdf['record-0']['signal_labels'])
 			seizureDF = getSeizureTimes(hdf)
 			if not seizureDF.empty: # i.e., it contains a seizure annotation
 				seizureTimes = seizureDF['starts_sec'].tolist()
@@ -74,19 +79,21 @@ def getSeizureTuples():
 				nonSeizure_tuples.append((fileNames[i], -1))
 			hdf.close()
 		except:
-			print(i, " failed.")
+			if (verbose): 
+				print(i, " failed.")
 	writeToFile(seizure_tuples, nonSeizure_tuples)
 
 def writeToFile(seizure_tuples, nonSeizure_tuples):
-	seizure_file = open('file_markers/seizures.txt', 'w+')
+	seizure_file = open('file_markers/seizures_test.txt', 'w+')
 	for name, count in seizure_tuples:
 		seizure_file.write("%s,%s\n" % (name, count))
 	
-	non_seizure_file = open('file_markers/nonSeizures.txt', 'w+')
+	non_seizure_file = open('file_markers/nonSeizures_test.txt', 'w+')
 	for name, count in nonSeizure_tuples:
 		non_seizure_file.write("%s,%s\n" % (name, count))
 
 if __name__ == "__main__":
-    getSeizureTuples()
+	args = parser.parse_args()
+	getSeizureTuples(args.data_dir, args.verbose)
 
 

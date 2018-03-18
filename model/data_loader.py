@@ -1,6 +1,4 @@
 import os
-
-
 import pandas as pd
 import numpy as np
 import h5py
@@ -14,22 +12,12 @@ EPOCH_LENGTH_SEC = 10
 INCLUDED_CHANNELS = ['EEG Fp1', 'EEG Fp2', 'EEG F3', 'EEG F4', 'EEG C3', 'EEG C4', 'EEG P3', 'EEG P4',
 'EEG O1', 'EEG O2', 'EEG F7', 'EEG F8', 'EEG T3', 'EEG T4', 'EEG T5', 'EEG T6', 'EEG Fz', 'EEG Cz', 'EEG Pz',
 'EEG Pg1', 'EEG Pg2', 'EEG A1', 'EEG A2', 'EEG FT9', 'EEG FT10']
-# PATH_TO_DATA = "../../../jdunnmon/EEG/eegdbs/SEC/stanford/"
-PATH_TO_DATA = "../../../jdunnmon/data/EEG/eegdbs/SEC/stanford/"
-PATH_TO_FILENAMES = "file_markers/"
 
-
-from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
 
 from random import shuffle # used to shuffle initial file names
 from random import randint # used to randomly pull nonSeizures
-
-""" Hershey edits
-Now, we're just loading up the data set by calling get_seizures.getDataLoaders()
-and then returning indices and the length according to the items returned from that
-I left fetch_dataloader as is, so it just creates the same train, test, and dev sets"""
 
 def getOrderedChannels(labelsObject):
     labels = list(labelsObject)
@@ -97,21 +85,22 @@ def parseTxtFiles(seizure_file, nonseizure_file):
 
     return combined_tuples
 
-class SIGNSDataset(Dataset):
+class SeizureDataset(Dataset):
     """
     A standard PyTorch definition of Dataset which defines the functions __len__ and __getitem__.
     """
     
-    def __init__(self, data_dir, split_type):
+    def __init__(self, data_dir, file_dir, split_type):
         """
-        Store the filenames of the jpgs to use. Specifies transforms to apply on images.
+        Store the filenames of the seizures to use. 
 
         Args:
             data_dir: (string) directory containing the dataset
-            transform: (torchvision.transforms) transformation to apply on image
+            file_dir: (string) directory containing the list of file names to pull in
+            split_type: (string) whether train, val, or test set
         """
-        self.file_tuples = parseTxtFiles(PATH_TO_FILENAMES + "seizures.txt", 
-                                            PATH_TO_FILENAMES + "nonSeizures.txt")
+        self.file_tuples = parseTxtFiles(file_dir + "seizures.txt", file_dir + "nonSeizures.txt")
+
         total = len(self.file_tuples)
         if split_type == 'train':
             self.file_tuples = self.file_tuples[ : int(total * 0.8)]
@@ -121,7 +110,7 @@ class SIGNSDataset(Dataset):
             self.file_tuples = self.file_tuples[int(total * 0.9) : int(total)]
 
         self.data_dir = data_dir
-        self.lastSeizure = (torch.zeros(2000, 25), 0)
+        self.file_dir = file_dir
         self.num_seiz_shaped = 0
         self.num_nonseiz_shaped = 0
 
@@ -130,7 +119,7 @@ class SIGNSDataset(Dataset):
 
     def __getitem__(self, idx):
         """
-        Fetch index idx image and labels from dataset. Perform transforms on image.
+        Fetch index idx seizure and label from dataset. 
 
         Args:
             idx: (int) index in [0, 1, ..., size_of_dataset-1]
@@ -140,13 +129,9 @@ class SIGNSDataset(Dataset):
             label: (int) corresponding label of image
         """
         file_name, seizure_idx = self.file_tuples[idx]
-
         currentFileName = self.data_dir + file_name
         hdf = h5py.File(currentFileName)
         orderedChannels = getOrderedChannels(hdf['record-0']['signal_labels'])
-
-        if orderedChannels == None:
-            return self.lastSeizure
 
         if seizure_idx == -1:
             nonSeizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], -1)
@@ -156,17 +141,17 @@ class SIGNSDataset(Dataset):
             seizureTimes = getSeizureTimes(hdf)
             seizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], seizureTimes[seizure_idx])
             seizure = torch.FloatTensor(seizure)
-            self.lastSeizure = (seizure, 1)
-            return self.lastSeizure
+            return (seizure, 1)
 
 
-def fetch_dataloader(types, data_dir, params):
+def fetch_dataloader(types, data_dir, file_dir, params):
     """
     Fetches the DataLoader object for each type in types from data_dir.
 
     Args:
         types: (list) has one or more of 'train', 'val', 'test' depending on which data is required
         data_dir: (string) directory containing the dataset
+        file_dir: (string) directory containing the list of file names to pull in
         params: (Params) hyperparameters
 
     Returns:
@@ -176,33 +161,19 @@ def fetch_dataloader(types, data_dir, params):
 
     for split in ['train', 'val', 'test']:
         if split in types:
-            path = os.path.join(data_dir, "{}_signs".format(split))
-
-            # use the train_transformer if training data, else use eval_transformer without random flip
-            if split == 'train':
-                dl = DataLoader(SIGNSDataset(PATH_TO_DATA, split), batch_size=params.batch_size, shuffle=True,
+            dl = DataLoader(SeizureDataset(data_dir, file_dir, split), batch_size=params.batch_size, shuffle=True,
                                         num_workers=params.num_workers,
                                         pin_memory=params.cuda)
-            else:
-                dl = DataLoader(SIGNSDataset(PATH_TO_DATA, split), batch_size=params.batch_size, shuffle=False,
-                                num_workers=params.num_workers,
-                                pin_memory=params.cuda)
 
             dataloaders[split] = dl
 
     return dataloaders
 
 if __name__ == '__main__':
+    """ used for testing"""
     PATH_TO_DATA = "../../../../jdunnmon/data/EEG/eegdbs/SEC/stanford/"
     PATH_TO_FILENAMES = "../file_markers/"
-    sd = SIGNSDataset(PATH_TO_DATA, 'train')
+    sd = SeizureDataset(PATH_TO_DATA, 'train')
     for i, (train_batch, labels_batch) in enumerate(sd):
         print(i, train_batch.shape)
-        # print(sd.num_seiz_shaped, sd.num_nonseiz_shaped)
 
-    # sd = SIGNSDataset(PATH_TO_DATA, 'train')
-    # print(len(sd))
-    # sd = SIGNSDataset(PATH_TO_DATA, 'val')
-    # print(len(sd))
-    # sd = SIGNSDataset(PATH_TO_DATA, 'test')
-    # print(len(sd))
