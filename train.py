@@ -16,7 +16,7 @@ import model.data_loader as data_loader
 from evaluate import evaluate
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='../../../jdunnmon/data/EEG/eegdbs/SEC/stanford/', help="Directory containing the dataset")
+parser.add_argument('--data_dir', default='../../../jdunnmon/eeg/EEG/eegdbs/SEC/stanford/', help="Directory containing the dataset")
 parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
 parser.add_argument('--files_dir', default='file_markers/', help="Directory containing txt file of listed names")
 parser.add_argument('--restore_file', default=None,

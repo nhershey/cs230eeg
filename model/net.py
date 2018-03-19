@@ -45,10 +45,13 @@ class Net(nn.Module):
 
         elif self.type == "lstm":
             # input_size, hidden_size, num_layers
-            # self.lstm = nn.LSTM(25, 20, 2000, batch_first=True, bidirectional=True)
             self.lstm = nn.LSTM(25, 20, 2)
             # the fully connected layer transforms the output to give the final output layer
             self.fc = nn.Linear(20, 1)
+            if params.bidirectional == 1:
+                self.lstm = nn.LSTM(25, 20, 2, bidirectional=True)
+                self.fc = nn.Linear(40, 1)
+            
 
     def forward(self, s):
         """
