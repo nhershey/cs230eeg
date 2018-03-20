@@ -101,13 +101,13 @@ class SeizureDataset(Dataset):
         """
         self.file_tuples = parseTxtFiles(file_dir + "seizures.txt", file_dir + "nonSeizures.txt")
 
-        total = 20000 #len(self.file_tuples)
+        total = len(self.file_tuples)
         if split_type == 'train':
-            self.file_tuples = self.file_tuples[ : int(total * 0.8)]
+            self.file_tuples = self.file_tuples[ : int(total * 0.9)]
         elif split_type == 'val':
-            self.file_tuples = self.file_tuples[int(total * 0.8) : int(total * 0.9)]
+            self.file_tuples = self.file_tuples[int(total * 0.9) : int(total * 0.95)]
         elif split_type == 'test':
-            self.file_tuples = self.file_tuples[int(total * 0.9) : int(total)]
+            self.file_tuples = self.file_tuples[int(total * 0.95) : int(total)]
 
         self.data_dir = data_dir
         self.file_dir = file_dir

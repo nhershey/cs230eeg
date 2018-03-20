@@ -1,0 +1,8 @@
+{
+    "save_summary_steps": 100, 
+    "num_workers": 0, 
+    "learning_rate": 1e-08, 
+    "num_epochs": 10, 
+    "type": "reg", 
+    "batch_size": 32
+}

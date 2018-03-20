@@ -10,9 +10,9 @@ import utils
 
 PYTHON = sys.executable
 parser = argparse.ArgumentParser()
-parser.add_argument('--parent_dir', default='experiments/learning_rate',
+parser.add_argument('--parent_dir', default='experiments/learning_rate2',
                     help='Directory containing params.json')
-parser.add_argument('--data_dir', default='data/64x64_SIGNS', help="Directory containing the dataset")
+parser.add_argument('--data_dir', default='../../../jdunnmon/eeg/EEG/eegdbs/SEC/stanford/', help="Directory containing the dataset")
 
 
 def launch_training_job(parent_dir, data_dir, job_name, params):
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     params = utils.Params(json_path)
 
     # Perform hypersearch over one parameter
-    learning_rates = [1e-4, 1e-3, 1e-2]
+    learning_rates = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4]
 
     for learning_rate in learning_rates:
         # Modify the relevant parameter in params
