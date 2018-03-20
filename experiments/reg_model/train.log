@@ -1,0 +1,8 @@
+2018-03-19 18:37:29,950:INFO: Loading the datasets...
+2018-03-19 18:37:30,189:INFO: - done.
+2018-03-19 18:37:32,548:INFO: Starting training for 50 epoch(s)
+2018-03-19 18:37:32,548:INFO: Epoch 1/50
+2018-03-19 18:59:15,272:INFO: - Train metrics: f1: 0.478 ; accuracy: 0.481 ; loss: 3.027
+2018-03-19 19:01:01,634:INFO: - Eval metrics : f1: 0.533 ; accuracy: 0.497 ; loss: 4.424
+2018-03-19 19:01:01,635:INFO: - Found new best accuracy
+2018-03-19 19:01:01,635:INFO: Epoch 2/50

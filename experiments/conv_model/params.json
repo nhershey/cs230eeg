@@ -1,8 +1,8 @@
 {
     "type": "conv",
     "learning_rate": 1e-3,
-    "batch_size": 256,
-    "num_epochs": 25,
+    "batch_size": 32,
+    "num_epochs": 50,
     "dropout_rate":0.8,
     "num_channels": 32,
     "save_summary_steps": 100,

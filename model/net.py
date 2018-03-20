@@ -21,6 +21,9 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.type = params.type
 
+        if self.type == "reg":
+            self.fc = nn.Linear(50000,1)
+
         if self.type == "conv":
             self.num_channels = params.num_channels
             # each of the convolution layers below have the arguments (input_channels, output_channels, filter_size,
@@ -40,8 +43,9 @@ class Net(nn.Module):
         
         elif self.type == "base":
             # simple base model
-            self.fc_1 = nn.Linear(50000,100)
-            self.fc_2 = nn.Linear(100,1)
+            self.fc_1 = nn.Linear(50000,1000)
+            self.fc_2 = nn.Linear(1000,30)
+            self.fc_3 = nn.Linear(30,1)
 
         elif self.type == "lstm":
             # input_size, hidden_size, num_layers
@@ -51,6 +55,27 @@ class Net(nn.Module):
             if params.bidirectional == 1:
                 self.lstm = nn.LSTM(25, 20, 2, bidirectional=True)
                 self.fc = nn.Linear(40, 1)
+
+        if self.type == "deepconv":
+            # in_channels, out_channels, kernel_size
+            self.conv1 = nn.Conv2d(1, 25, (10,1), stride=1, padding=1)
+            self.conv2 = nn.Conv2d(25, 50, (10,1), stride=1, padding=1)
+            self.conv3 = nn.Conv2d(50, 100, (10,1), stride=1, padding=1)
+            self.conv4 = nn.Conv2d(100, 200, (10,1), stride=1, padding=1)
+            self.conv5 = nn.Conv2d(200, 400, (10,1), stride=1, padding=1)
+            self.fc1 = nn.Linear(400*4*35, 400)
+            self.fcbn1 = nn.BatchNorm1d(400)
+            self.fc2 = nn.Linear(400, 1)
+            self.dropout_rate = params.dropout_rate
+
+        if self.type == "deeplstm":
+            self.lstm = nn.LSTM(25, 20, 2, bidirectional=True)
+            self.fc1 = nn.Linear(40, 10)
+            self.fcbn1 = nn.BatchNorm1d(10)
+            self.fc2 = nn.Linear(10, 1)
+
+
+
             
 
     def forward(self, s):
@@ -64,6 +89,11 @@ class Net(nn.Module):
 
         Note: the dimensions after each step are provided
         """
+        if (self.type == "reg"):
+            s = s.view(-1, 50000)
+            s = self.fc(s)
+            return F.sigmoid(s)
+
         if (self.type == "conv"):
             # we apply the convolution layers, followed by batch normalisation, maxpool and relu x 3
             s = s.unsqueeze(1)                                  # -> batch_size x 1 x 2000 x 25
@@ -85,12 +115,11 @@ class Net(nn.Module):
         elif (self.type == "base"):
             s = s.view(-1, 50000) 
             s = F.relu(self.fc_1(s))
-            s = self.fc_2(s)
+            s = F.relu(self.fc_2(s))
+            s = self.fc_3(s)
             return F.sigmoid(s)
 
         elif (self.type == "lstm"):
-            # -> batch_size x 2000 x 25
-            # -> 2000 x batch_size x 25
             s = s.transpose(0, 1)
             # Forward propagate RNN
             out, _ = self.lstm(s)  
@@ -98,6 +127,37 @@ class Net(nn.Module):
             last_out = out[-1,:,:]
             out = self.fc(last_out)  
             return F.sigmoid(out)
+
+        elif (self.type == "deeplstm"):
+            s = s.transpose(0, 1)
+            # Forward propagate RNN
+            out, hidden = self.lstm(s)  
+            # Decode hidden state of last time step (seq_len, batch, hidden_size * num_directions)
+            s = F.relu(F.max_pool1d(hidden[0], 2))
+            s = s.transpose(0, 1)
+            s = s.contiguous()
+            s = s.view(-1, 4 * 10)
+            s = F.relu(self.fcbn1(self.fc1(s)))
+            s = self.fc2(s)  
+            return F.sigmoid(s)
+
+        elif (self.type == "deepconv"):
+            s = s.unsqueeze(1)
+            s = F.elu(self.conv1(s))
+            s = F.max_pool2d(s, (3, 1))
+            s = F.elu(self.conv2(s))
+            s = F.max_pool2d(s, (3, 1))
+            s = F.elu(self.conv3(s))
+            s = F.max_pool2d(s, (3, 1))
+            s = F.elu(self.conv4(s))
+            s = F.max_pool2d(s, (3, 1))
+            s = F.elu(self.conv5(s))
+            s = F.max_pool2d(s, (3, 1))
+            s = s.contiguous()
+            s = s.view(-1, 400*4*35)
+            s = F.dropout(F.relu(self.fcbn1(self.fc1(s))),p=self.dropout_rate, training=self.training)
+            s = self.fc2(s)
+            return F.sigmoid(s)
 
 
 def loss_fn(outputs, labels):
