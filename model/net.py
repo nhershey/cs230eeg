@@ -68,6 +68,17 @@ class Net(nn.Module):
             self.fc2 = nn.Linear(400, 1)
             self.dropout_rate = params.dropout_rate
 
+        if self.type == "deepconv_nodo":
+            # in_channels, out_channels, kernel_size
+            self.conv1 = nn.Conv2d(1, 25, (10,1), stride=1, padding=1)
+            self.conv2 = nn.Conv2d(25, 50, (10,1), stride=1, padding=1)
+            self.conv3 = nn.Conv2d(50, 100, (10,1), stride=1, padding=1)
+            self.conv4 = nn.Conv2d(100, 200, (10,1), stride=1, padding=1)
+            self.conv5 = nn.Conv2d(200, 400, (10,1), stride=1, padding=1)
+            self.fc1 = nn.Linear(400*4*35, 400)
+            self.fcbn1 = nn.BatchNorm1d(400)
+            self.fc2 = nn.Linear(400, 1)
+
         if self.type == "deeplstm":
             self.lstm = nn.LSTM(25, 20, 2, bidirectional=True)
             self.fc1 = nn.Linear(40, 10)
@@ -159,6 +170,24 @@ class Net(nn.Module):
             s = self.fc2(s)
             return F.sigmoid(s)
 
+        elif (self.type == "deepconv_nodo"):
+            s = s.unsqueeze(1)
+            s = F.relu(self.conv1(s))
+            s = F.max_pool2d(s, (3, 1))
+            s = F.relu(self.conv2(s))
+            s = F.max_pool2d(s, (3, 1))
+            s = F.relu(self.conv3(s))
+            s = F.max_pool2d(s, (3, 1))
+            s = F.relu(self.conv4(s))
+            s = F.max_pool2d(s, (3, 1))
+            s = F.relu(self.conv5(s))
+            s = F.max_pool2d(s, (3, 1))
+            s = s.contiguous()
+            s = s.view(-1, 400*4*35)
+            s = F.relu(self.fcbn1(self.fc1(s)))
+            s = self.fc2(s)
+            return F.sigmoid(s)
+
 
 def loss_fn(outputs, labels):
     """
@@ -188,9 +217,9 @@ def accuracy(outputs, labels):
 
     Returns: (float) accuracy in [0,1]
     """
-    outputs = np.rint(outputs)
-    labels = labels.reshape(outputs.shape)
-    accuracy = np.sum(outputs==labels)/float(labels.size)
+    outputs_round = np.rint(outputs)
+    labels = labels.reshape(outputs_round.shape)
+    accuracy = np.sum(outputs_round==labels)/float(labels.size)
     # import ipdb; ipdb.set_trace()
     return accuracy
 
@@ -214,6 +243,7 @@ def f1score(outputs, labels):
     if (precision + recall == 0):
         return 0
     f1 = 2 * (precision * recall) / (precision + recall)
+    # import ipdb; ipdb.set_trace()
     return f1
 
 

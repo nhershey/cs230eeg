@@ -54,7 +54,6 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
         output_batch = output_batch.data.cpu().numpy()
         labels_batch = labels_batch.data.cpu().numpy()
 
-        # compute all metrics on this batch
         summary_batch = {metric: metrics[metric](output_batch, labels_batch)
                          for metric in metrics}
         summary_batch['loss'] = loss.data[0]

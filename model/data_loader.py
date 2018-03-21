@@ -101,7 +101,7 @@ class SeizureDataset(Dataset):
         """
         self.file_tuples = parseTxtFiles(file_dir + "seizures.txt", file_dir + "nonSeizures.txt")
 
-        total = len(self.file_tuples)
+        total = 1000 #len(self.file_tuples)
         if split_type == 'train':
             self.file_tuples = self.file_tuples[ : int(total * 0.9)]
         elif split_type == 'val':
