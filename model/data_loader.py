@@ -28,13 +28,21 @@ def getOrderedChannels(labelsObject):
         orderedChannels.append(labels.index(ch))
     return orderedChannels
 
-def sliceEpoch(orderedChannels, signals, sliceTime):
+def sliceEpoch(orderedChannels, signals, sliceTime, sliceType="after"):
+    # handle random case
     if (sliceTime == -1):
         maxStart = max(signals.shape[1] - FREQUENCY * EPOCH_LENGTH_SEC, 0)
         sliceTime = randint(0, maxStart)
         sliceTime /= FREQUENCY
-    startTime = int(FREQUENCY * sliceTime)
-    endTime = startTime + int(FREQUENCY * EPOCH_LENGTH_SEC)
+
+    # slice based on time
+    if (sliceType == "after"):
+        startTime = int(FREQUENCY * sliceTime)
+        endTime = startTime + int(FREQUENCY * EPOCH_LENGTH_SEC)
+    elif (sliceType == "before"):
+        endTime = int(FREQUENCY * sliceTime)
+        startTime = endTime - int(FREQUENCY * EPOCH_LENGTH_SEC)
+        startTime = max(endTime, 0)
     sliceMatrix = signals[orderedChannels,  startTime : endTime]
 
     # standardize by row
@@ -48,7 +56,10 @@ def sliceEpoch(orderedChannels, signals, sliceTime):
     diff = FREQUENCY * EPOCH_LENGTH_SEC - sliceMatrix.shape[1]
     if diff > 0:
         zeros = np.zeros((sliceMatrix.shape[0], diff))
-        sliceMatrix = np.concatenate((sliceMatrix, zeros), axis=1)
+        if (sliceType == "after"):
+            sliceMatrix = np.concatenate((sliceMatrix, zeros), axis=1)
+        elif (sliceType == "before"):
+            sliceMatrix = np.concatenate((zeros, sliceMatrix), axis=1)
 
     sliceMatrix = sliceMatrix.T
     return sliceMatrix
