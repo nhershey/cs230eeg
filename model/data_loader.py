@@ -42,7 +42,7 @@ def sliceEpoch(orderedChannels, signals, sliceTime, sliceType="after"):
     elif (sliceType == "before"):
         endTime = int(FREQUENCY * sliceTime)
         startTime = endTime - int(FREQUENCY * EPOCH_LENGTH_SEC)
-        startTime = max(endTime, 0)
+        startTime = max(startTime, 0)
     sliceMatrix = signals[orderedChannels,  startTime : endTime]
 
     # standardize by row
@@ -101,7 +101,7 @@ class SeizureDataset(Dataset):
     A standard PyTorch definition of Dataset which defines the functions __len__ and __getitem__.
     """
     
-    def __init__(self, data_dir, file_dir, split_type):
+    def __init__(self, data_dir, file_dir, split_type, slice_type):
         """
         Store the filenames of the seizures to use. 
 
@@ -112,7 +112,7 @@ class SeizureDataset(Dataset):
         """
         self.file_tuples = parseTxtFiles(file_dir + "seizures.txt", file_dir + "nonSeizures.txt")
 
-        total = 1000 #len(self.file_tuples)
+        total = len(self.file_tuples)
         if split_type == 'train':
             self.file_tuples = self.file_tuples[ : int(total * 0.9)]
         elif split_type == 'val':
@@ -122,6 +122,7 @@ class SeizureDataset(Dataset):
 
         self.data_dir = data_dir
         self.file_dir = file_dir
+        self.slice_type = slice_type
         self.num_seiz_shaped = 0
         self.num_nonseiz_shaped = 0
 
@@ -150,7 +151,7 @@ class SeizureDataset(Dataset):
             return (nonSeizure, 0)
         else:
             seizureTimes = getSeizureTimes(hdf)
-            seizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], seizureTimes[seizure_idx])
+            seizure = sliceEpoch(orderedChannels, hdf['record-0']['signals'], seizureTimes[seizure_idx], sliceType=self.slice_type)
             seizure = torch.FloatTensor(seizure)
             return (seizure, 1)
 
@@ -172,7 +173,10 @@ def fetch_dataloader(types, data_dir, file_dir, params):
 
     for split in ['train', 'val', 'test']:
         if split in types:
-            dl = DataLoader(SeizureDataset(data_dir, file_dir, split), batch_size=params.batch_size, shuffle=True,
+            slice_type = "after"
+            if hasattr(params, 'slice'):
+                slice_type = "before"
+            dl = DataLoader(SeizureDataset(data_dir, file_dir, split, slice_type), batch_size=params.batch_size, shuffle=True,
                                         num_workers=params.num_workers,
                                         pin_memory=params.cuda)
 
