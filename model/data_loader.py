@@ -46,7 +46,11 @@ def sliceEpoch(orderedChannels, signals, sliceTime, sliceType="after"):
     sliceMatrix = signals[orderedChannels,  startTime : endTime]
 
     # standardize by row
-    row_max = sliceMatrix.max(axis=1)
+    try:
+        row_max = sliceMatrix.max(axis=1)
+    except:
+        print("have failed")
+        return np.zeros((2000,25))
     row_max = row_max[:, np.newaxis]
     row_max = np.abs(row_max)
     row_max = np.maximum(row_max, 1e-8) #for numerical stability
@@ -86,7 +90,7 @@ def parseTxtFiles(seizure_file, nonseizure_file):
 
     combined_str = seizure_str[ : smaller_half] + nonseizure_str[ : smaller_half]
 
-    shuffle(combined_str)
+    # shuffle(combined_str)
 
     combined_tuples = []
     for i in range(len(combined_str)):
